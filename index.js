@@ -62,18 +62,21 @@ exports.setDefaults = defaults => (object) => {
 exports.fetchUserByNameAndUsersCompany = async (name, service) => {
   const result = {};
 
-  const status = await service.fetchStatus();
-  result.status = status;
+  await service.fetchStatus().then((status) => {
+    result.status = { ...status };
+  });
 
-  const users = await service.fetchUsers();
+  await service.fetchUsers().then(async (users) => {
+    const index = users.findIndex(user => user.name === name);
+    if (index > -1) {
+      const user = users[index];
+      result.user = { ...user };
 
-  const index = users.findIndex(user => user.name === name);
-  if (index > -1) {
-    const user = users[index];
-    result.user = user;
+      await service.fetchCompanyById(user.companyId).then((company) => {
+        result.company = { ...company };
+      });
+    }
+  });
 
-    const company = await service.fetchCompanyById(user.companyId);
-    result.company = company;
-  }
   return result;
 };
