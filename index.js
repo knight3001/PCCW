@@ -18,25 +18,16 @@ exports.stripPrivateProperties = (properties, array) => {
 };
 
 exports.excludeByProperty = (property, array) => {
-  return array.filter(item => item[property] === undefined);
+  return array.filter(item => !Object.prototype.hasOwnProperty.call(item, property));
 };
 
 exports.sumDeep = (array) => {
   return array.map((item) => {
     const result = { ...item };
     Object.keys(result).forEach((key) => {
-      let sum = 0;
-      const values = result[key];
-
-      values.forEach((val) => {
-        Object.keys(val).forEach((e) => {
-          const data = val[e];
-          if (Number.isInteger(data)) {
-            sum += parseInt(data, 10);
-          }
-        });
-      });
-
+      const sum = result[key].reduce((accumulator, currentValue) => {
+        return accumulator + parseInt(currentValue.val, 10);
+      }, 0);
       result[key] = sum;
     });
 
@@ -65,14 +56,7 @@ exports.createGreeting = (greetFunction, greeting) => {
 };
 
 exports.setDefaults = defaults => (object) => {
-  const result = { ...object };
-
-  Object.keys(defaults).forEach((key) => {
-    if (result[key] === undefined) {
-      result[key] = defaults[key];
-    }
-  });
-  return result;
+  return { ...defaults, ...object };
 };
 
 exports.fetchUserByNameAndUsersCompany = async (name, service) => {
